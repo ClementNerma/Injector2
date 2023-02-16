@@ -1,0 +1,11 @@
+{
+    "formatter": {
+        "lineWidth": 120
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "single",
+            "semicolons": "asNeeded"
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": true,
+    "module": "CommonJS",
+    "lib": ["DOM", "ESNext"]
+  }
+}
