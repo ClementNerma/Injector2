@@ -11,12 +11,14 @@ import express from 'express'
  * @param {string[] | undefined} exclude,
  * @returns {Directory}
  */
-function buildDirJson(dir, rootDir, exclude) {
+function buildDirJson(dir, rootDir) {
 	return Object.fromEntries(
 		readdirSync(dir)
-			.filter((item) => !(Boolean(exclude?.includes(item)) || item.startsWith('.')))
+			.filter((item) => !item.startsWith('.'))
 			.map((item) => {
 				const itemPath = join(dir, item)
+
+			console.log(itemPath, lstatSync(itemPath).isDirectory())
 
 				/** @type {DirectoryEntry} */
 				const content = lstatSync(itemPath).isDirectory()
@@ -28,18 +30,19 @@ function buildDirJson(dir, rootDir, exclude) {
 	)
 }
 
-const rootDir = process.cwd()
-
 const app = express()
-const port = parseInt(process.argv[2])
+const dir = process.argv[2]
+const port = parseInt(process.argv[3] ?? '1235')
 
 if (Number.isNaN(port)) {
 	throw new Error('Please provide a valid port number')
 }
 
+const rootDir = join(process.cwd(), dir)
+
 app.get('/', (_, res) => {
 	res.type('json')
-	res.send(JSON.stringify(buildDirJson(rootDir, rootDir, ['_server'])))
+	res.send(JSON.stringify(buildDirJson(rootDir, rootDir)))
 })
 
 console.log(`Running server on port ${port}`)
