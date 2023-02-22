@@ -190,8 +190,8 @@ function matchRegex(str, regex, callback) {
  * Attributes is a key-value object, while 'content' is either an array of elements or an HTML string
  *
  * @param {string} tagName
- * @param {Record<string, string>} attributes
- * @param {string | HTMLElement[]} contentOrChildren
+ * @param {Record<string, string | number>} [attributes]
+ * @param {string | HTMLElement[]} [contentOrChildren]
  * @param {Partial<Record<keyof HTMLElementEventMap, Function>>} [eventListeners]
  * @returns
  */
@@ -200,7 +200,7 @@ function createEl(tagName, attributes, contentOrChildren, eventListeners) {
 
 	if (attributes) {
 		for (const [name, value] of Object.entries(attributes)) {
-			el.setAttribute(name, value)
+			el.setAttribute(name, typeof value === 'number' ? value.toString() : value)
 		}
 	}
 
@@ -304,7 +304,7 @@ const displayJson = (json) => console.log(JSON.stringify(json, null, 4))
  * @template T
  * @param {unknown} value
  * @param {new() => T} type
- * @param {string | undefined} message
+ * @param {string | undefined} [message]
  * @returns {T}
  */
 function _assertType(value, type, message) {
