@@ -190,9 +190,9 @@ function matchRegex(str, regex, callback) {
  * Attributes is a key-value object, while 'content' is either an array of elements or an HTML string
  *
  * @param {string} tagName
- * @param {Record<string, string | number>} [attributes]
+ * @param {Record<string, string | number | boolean>} [attributes]
  * @param {string | HTMLElement[]} [contentOrChildren]
- * @param {Partial<Record<keyof HTMLElementEventMap, Function>>} [eventListeners]
+ * @param {Partial<Record<keyof HTMLElementEventMap, (event: Event, self: HTMLElement) => void>>} [eventListeners]
  * @returns
  */
 function createEl(tagName, attributes, contentOrChildren, eventListeners) {
@@ -200,7 +200,11 @@ function createEl(tagName, attributes, contentOrChildren, eventListeners) {
 
 	if (attributes) {
 		for (const [name, value] of Object.entries(attributes)) {
-			el.setAttribute(name, typeof value === 'number' ? value.toString() : value)
+			if (value === false) {
+				continue
+			}
+
+			el.setAttribute(name, value.toString())
 		}
 	}
 
@@ -216,8 +220,7 @@ function createEl(tagName, attributes, contentOrChildren, eventListeners) {
 
 	if (eventListeners) {
 		for (const [eventName, listener] of Object.entries(eventListeners)) {
-			// @ts-ignore
-			el.addEventListener(eventName, listener)
+			el.addEventListener(eventName, (e) => listener(e, el))
 		}
 	}
 
@@ -263,6 +266,34 @@ async function pageReady() {
 	if (document.readyState !== 'complete') {
 		await new Promise((r) => window.addEventListener('load', r))
 	}
+}
+
+/**
+ * Listen for events on an <input> element
+ * @param {HTMLInputElement} inputEl
+ * @param {(content: string, event: Event) => void} onInput
+ */
+async function listenInput(inputEl, onInput) {
+	inputEl.addEventListener('input', (e) => {
+		onInput(getInputValue(e), e)
+	})
+}
+
+/**
+ * Assert a value as being an event for an <input> or <select> element
+ * @param {Event} event
+ * @returns {string}
+ */
+function getInputValue(event) {
+	if (!event.currentTarget) {
+		fail('No current target in <input> element\'s "input" event')
+	}
+
+	if (!('value' in event.currentTarget && typeof event.currentTarget.value === 'string')) {
+		fail('Failed to retrieve value from <input> element\'s "input" event')
+	}
+
+	return event.currentTarget.value
 }
 
 /**
