@@ -119,7 +119,7 @@ function clickReady(selector, callback) {
 /**
  * Remove an element when it appears
  * @param {string} selector
- * @param {() => void} callback
+ * @param {() => void} [callback]
  */
 function removeReady(selector, callback) {
 	waitFor(selector, (el) => {
@@ -131,7 +131,7 @@ function removeReady(selector, callback) {
 /**
  * Hide an element and remove it when it appears
  * @param {string} selector
- * @param {() => void} callback
+ * @param {() => void} [callback]
  */
 function hideAndRemove(selector, callback) {
 	hide(selector)
