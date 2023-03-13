@@ -5,6 +5,12 @@
   "version": "1.0.0",
   "description": "Inject JavaScript files on any website",
 
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "clement.nerma@gmail.com"
+    }
+  },
+
   "icons": {
     "16": "icons/16x16.png",
     "48": "icons/48x48.png",
