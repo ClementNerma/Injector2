@@ -301,6 +301,39 @@ function getInputValue(event) {
  */
 const query = new URLSearchParams(window.location.search)
 
+// ============ Browser utilities ============ //
+
+/**
+ * Wait for a specific condition to occurr
+ * @param {() => boolean} loop
+ * @param {number} timeout
+ * @param {number} refresh
+ * @returns
+ */
+async function waitForCond(loop, timeout = 4000, refresh = 10) {
+	const isDone = loop()
+
+	if (isDone) {
+		return
+	}
+
+	const started = Date.now()
+
+	const waiter = setInterval(() => {
+		const isDone = loop()
+
+		if (isDone) {
+			if (Date.now() - started >= timeout) {
+				clearInterval(waiter)
+			}
+
+			return
+		}
+
+		clearInterval(waiter)
+	}, refresh)
+}
+
 // ============ Small utilities ============ //
 
 /**
