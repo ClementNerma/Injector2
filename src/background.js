@@ -75,4 +75,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, _, tab) => {
         code: injectionCode,
         runAt: 'document_start'
     })
+
+    console.debug(`Injected script for domain "${domain}"`)
 })

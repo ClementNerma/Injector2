@@ -18,8 +18,6 @@ function buildDirJson(dir, rootDir) {
 			.map((item) => {
 				const itemPath = join(dir, item)
 
-			console.log(itemPath, lstatSync(itemPath).isDirectory())
-
 				/** @type {DirectoryEntry} */
 				const content = lstatSync(itemPath).isDirectory()
 					? { type: 'directory', content: buildDirJson(itemPath, rootDir) }
