@@ -28,8 +28,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, _, tab) => {
     console.debug(`Matched URL "${tab.url}" as domain "${domain}"`)
 
     const beforeFetching = Date.now()
-
-    const scriptRes = await fetch('http://localhost:1235', { cache: 'no-store' })
+    
+    const scriptsUrl = chrome.runtime.getURL(`dist/scripts.json`)
+    const scriptRes = await fetch(scriptsUrl, { cache: 'no-store' })
 
     if (!scriptRes.ok) {
         throw new Error("Failed to fetch injector's entrypoint!")

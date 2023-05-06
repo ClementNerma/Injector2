@@ -1,5 +1,3 @@
 {
-  "[javascript]": {
-    "editor.defaultFormatter": "rome.rome"
-  }
+  "js/ts.implicitProjectConfig.checkJs": true
 }

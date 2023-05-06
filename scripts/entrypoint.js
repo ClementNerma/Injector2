@@ -1,7 +1,7 @@
 'use strict'
 
-/** @typedef {Record<string, DirectoryEntry>} Directory */
-/** @typedef {{ type: 'directory', content: Directory } | { type: 'file', content: string }} DirectoryEntry */
+/** @typedef {Record<string, InjectorDirectoryEntry>} InjectorDirectory */
+/** @typedef {{ type: 'directory', content: InjectorDirectory } | { type: 'file', content: string }} InjectorDirectoryEntry */
 
 /** @returns {never} */
 function fail(/** @type {string} */ message) {
@@ -98,7 +98,7 @@ function canonicalizePath(/** @type {string} */ path) {
 }
 
 function injectorGetFile(/** @type {string} */ filePath) {
-	/** @type {Directory} */
+	/** @type {InjectorDirectory} */
 	// @ts-ignore
 	let intermediary = files
 
@@ -154,7 +154,7 @@ const scriptsCallTree = [__injectorEntrypoint]
 /** @type {Array<typeof eval>} */
 const scriptsEvalFn = [(script) => eval(script)]
 
-/** @type {Directory} */
+/** @type {InjectorDirectory} */
 // @ts-ignore
 const files = __injectorFiles
 

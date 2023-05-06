@@ -1,0 +1,9 @@
+{
+	"private": true,
+	"scripts": {
+		"build": "node build.js && rm -f Injector2.xpi && zip -FSr Injector2.xpi *"
+	},
+	"devDependencies": {
+		"@types/chrome": "^0.0.235"
+	}
+}
