@@ -1,3 +1,4 @@
 /scripts/domains
 /dist
 /Injector2.xpi
+/server/node_modules
