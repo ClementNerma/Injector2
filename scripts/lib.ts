@@ -1,44 +1,43 @@
-'use strict'
+/**
+ * Fail with an error message
+ */
+export function fail(message: string): never {
+	alert(`Injector failed: ${message}`)
+	throw new Error(`Injector failed: ${message}`)
+}
 
 /**
  * Check if DOM is ready
  */
-const isDOMReady = () => document.readyState === 'interactive'
+export const isDOMReady = () => document.readyState === 'interactive'
 
 /**
  * Check if page is ready
  */
-const isPageReady = () => document.readyState === 'complete'
+export const isPageReady = () => document.readyState === 'complete'
 
 /**
  * Select an element using a CSS selector
- * @param {string} selector
- * @returns
  */
-const q = (selector) => _assertHtmlElementOrNull(document.querySelector(selector))
+export const q = (selector: string) => _assertHtmlElementOrNull(document.querySelector(selector))
 
 /**
  * Select all elements that match a CSS selector
- * @param {string} selector
- * @returns
  */
-const qa = (selector) => Array.from(document.querySelectorAll(selector)).map(_assertHtmlElement)
+export const qa = (selector: string) => Array.from(document.querySelectorAll(selector)).map(_assertHtmlElement)
 
 /**
  * Get the style of an element matching a CSS selector
- * @param {string} selector
- * @returns
  */
-function styleOf(selector) {
+export function styleOf(selector: string): CSSStyleDeclaration | null {
 	const el = q(selector)
 	return el ? el.style : null
 }
 
 /**
  * Inject a new stylesheet in the page
- * @param {string} css
  */
-function css(css) {
+export function css(css: string): void {
 	const stylesheet = document.createElement('style')
 	stylesheet.innerHTML = css
 	waitFor('head', (head) => head.appendChild(stylesheet))
@@ -46,70 +45,70 @@ function css(css) {
 
 /**
  * Wait for an element to appear
- * @param {string} selector
- * @param {(el: HTMLElement, time: number) => void} callback
- * @param {number} delayAfterDomReady
- * @param {number} refresh
  * @returns
  */
-async function waitFor(selector, callback, delayAfterDomReady = 4000, refresh = 10) {
+export async function waitFor(
+	selector: string,
+	callback: (el: HTMLElement, time: number) => void,
+	delayAfterDomReady = 4000,
+	refresh = 10,
+): Promise<boolean> {
 	const init = q(selector)
 
 	if (init) {
 		callback(init, 0)
-		return
+		return true
 	}
 
 	await domReady()
 
-	const started = Date.now()
+	return new Promise((resolve) => {
+		const started = Date.now()
 
-	const waiter = setInterval(() => {
-		const target = q(selector)
+		const waiter = setInterval(() => {
+			const target = q(selector)
 
-		if (!target) {
-			if (isPageReady() && Date.now() - started >= delayAfterDomReady) {
-				clearInterval(waiter)
+			if (!target) {
+				if (isPageReady() && Date.now() - started >= delayAfterDomReady) {
+					clearInterval(waiter)
+					resolve(false)
+				}
+
+				return
 			}
 
-			return
-		}
-
-		clearInterval(waiter)
-		callback(target, Date.now() - started)
-	}, refresh)
+			clearInterval(waiter)
+			callback(target, Date.now() - started)
+			resolve(true)
+		}, refresh)
+	})
 }
 
 /**
  * Hide an element
- * @param {string} selector
  */
-function hide(selector) {
+export function hide(selector: string): void {
 	css(`${selector} { display: none !important; }`)
 }
 
 /**
  * Remove an element
- * @param {string} selector
  */
-function remove(selector) {
+export function remove(selector: string): void {
 	q(selector)?.remove()
 }
 
 /**
  * Remove all elements matching a selector
- * @param {string} selector
  */
-function removeAll(selector) {
+export function removeAll(selector: string): void {
 	qa(selector).forEach((el) => el.remove())
 }
 
 /**
  * Click an element once it appears
- * @param {string} selector
- * @param {() => void} callback
  */
-function clickReady(selector, callback) {
+export function clickReady(selector: string, callback?: () => void): void {
 	waitFor(selector, (el) => {
 		el.click()
 		callback?.()
@@ -118,10 +117,8 @@ function clickReady(selector, callback) {
 
 /**
  * Remove an element when it appears
- * @param {string} selector
- * @param {() => void} [callback]
  */
-function removeReady(selector, callback) {
+export function removeReady(selector: string, callback?: () => void): void {
 	waitFor(selector, (el) => {
 		el.remove()
 		callback?.()
@@ -130,20 +127,16 @@ function removeReady(selector, callback) {
 
 /**
  * Hide an element and remove it when it appears
- * @param {string} selector
- * @param {() => void} [callback]
  */
-function hideAndRemove(selector, callback) {
+export function hideAndRemove(selector: string, callback?: () => void): void {
 	hide(selector)
 	removeReady(selector, callback)
 }
 
 /**
  * Hide and remove all elements matching a selector when they are appear (the first time only)
- * @param {string} selector
- * @param {() => void} callback
  */
-function hideAndRemoveAll(selector, callback) {
+export function hideAndRemoveAll(selector: string, callback?: () => void): void {
 	hide(selector)
 	waitFor(selector, (_) => {
 		removeAll(selector)
@@ -153,20 +146,17 @@ function hideAndRemoveAll(selector, callback) {
 
 /**
  * Hide and remove all elements matching a selector when they are appear
- * @param {string} selector
- * @param {number} refresh
  */
-function hideAndRemoveAllContinuously(selector, refresh = 20) {
+export function hideAndRemoveAllContinuously(selector: string, refresh = 20): void {
 	hide(selector)
 	setInterval(() => removeAll(selector), refresh)
 }
 
 /**
  * Run a function in parallel of the current flow
- * @param {() => void} callback
  * @returns
  */
-function parallel(callback) {
+export function parallel(callback: () => void): number {
 	return setTimeout(callback, 1)
 }
 
@@ -174,13 +164,8 @@ function parallel(callback) {
  * Perform an action if a string matches a regular expression
  * The match's informations are provided to the callback
  * The callback return's value is returned in case of match, else `null` is returned
- *
- * @template T
- * @param {string} str
- * @param {RegExp} regex
- * @param {(match: RegExpMatchArray) => T} callback
  */
-function matchRegex(str, regex, callback) {
+export function matchRegex<T>(str: string, regex: RegExp, callback: (match: RegExpMatchArray) => T): T | null {
 	const match = str.match(regex)
 	return match ? callback(match) : null
 }
@@ -188,14 +173,13 @@ function matchRegex(str, regex, callback) {
 /**
  * Create a DOM element
  * Attributes is a key-value object, while 'content' is either an array of elements or an HTML string
- *
- * @param {string} tagName
- * @param {Record<string, string | number | boolean>} [attributes]
- * @param {string | HTMLElement[]} [contentOrChildren]
- * @param {Partial<Record<keyof HTMLElementEventMap, (event: Event, self: HTMLElement) => void>>} [eventListeners]
- * @returns
  */
-function createEl(tagName, attributes, contentOrChildren, eventListeners) {
+export function createEl(
+	tagName: string,
+	attributes?: Record<string, string | number | boolean>,
+	contentOrChildren?: string | HTMLElement[],
+	eventListeners?: Partial<Record<keyof HTMLElementEventMap, (event: Event, self: HTMLElement) => void>>,
+): HTMLElement {
 	const el = document.createElement(tagName)
 
 	if (attributes) {
@@ -229,11 +213,8 @@ function createEl(tagName, attributes, contentOrChildren, eventListeners) {
 
 /**
  * Download an in-memory buffer to a file
- * @param {string} text
- * @param {string} filename
- * @param {string} mimeType
  */
-function download(text, filename = 'file.txt', mimeType = 'text/plain') {
+export function download(text: string, filename = 'file.txt', mimeType = 'text/plain'): void {
 	const blob = new Blob([text], { type: mimeType })
 	const url = window.URL.createObjectURL(blob)
 
@@ -251,7 +232,7 @@ function download(text, filename = 'file.txt', mimeType = 'text/plain') {
  * Wait for the DOM to be ready
  * Useful for immediate scripts that require the DOM to be ready but do not want to wait for resources like images
  */
-async function domReady() {
+export async function domReady(): Promise<void> {
 	if (document.readyState !== 'interactive' && document.readyState !== 'complete') {
 		await new Promise((r) => window.addEventListener('DOMContentLoaded', r))
 	}
@@ -262,7 +243,7 @@ async function domReady() {
  * Useful for immediate scripts that also want to run another function
  *   only after the DOM is ready
  */
-async function pageReady() {
+export async function pageReady(): Promise<void> {
 	if (document.readyState !== 'complete') {
 		await new Promise((r) => window.addEventListener('load', r))
 	}
@@ -270,10 +251,11 @@ async function pageReady() {
 
 /**
  * Listen for events on an <input> element
- * @param {HTMLInputElement} inputEl
- * @param {(content: string, event: Event) => void} onInput
  */
-async function listenInput(inputEl, onInput) {
+export async function listenInput(
+	inputEl: HTMLInputElement,
+	onInput: (content: string, event: Event) => void,
+): Promise<void> {
 	inputEl.addEventListener('input', (e) => {
 		onInput(getInputValue(e), e)
 	})
@@ -281,10 +263,8 @@ async function listenInput(inputEl, onInput) {
 
 /**
  * Assert a value as being an event for an <input> or <select> element
- * @param {Event} event
- * @returns {string}
  */
-function getInputValue(event) {
+export function getInputValue(event: Event): string {
 	if (!event.currentTarget) {
 		fail('No current target in <input> element\'s "input" event')
 	}
@@ -299,79 +279,63 @@ function getInputValue(event) {
 /**
  * Get the current URL's query parameters and/or update it
  */
-const query = new URLSearchParams(window.location.search)
+export function query(): URLSearchParams {
+	return new URLSearchParams(window.location.search)
+}
 
 // ============ Browser utilities ============ //
 
 /**
  * Wait for a specific condition to occurr
- * @param {() => boolean} loop
- * @param {number} timeout
- * @param {number} refresh
  * @returns
  */
-async function waitForCond(loop, timeout = 4000, refresh = 10) {
+export async function waitForCond(loop: () => boolean, timeout = 4000, refresh = 10): Promise<boolean> {
 	const isDone = loop()
 
 	if (isDone) {
-		return
+		return true
 	}
 
 	const started = Date.now()
 
-	const waiter = setInterval(() => {
-		const isDone = loop()
+	return new Promise((resolve) => {
+		const waiter = setInterval(() => {
+			const isDone = loop()
 
-		if (isDone) {
-			if (Date.now() - started >= timeout) {
-				clearInterval(waiter)
+			if (!isDone) {
+				if (Date.now() - started >= timeout) {
+					clearInterval(waiter)
+					resolve(false)
+				}
+
+				return
 			}
 
-			return
-		}
-
-		clearInterval(waiter)
-	}, refresh)
+			clearInterval(waiter)
+			resolve(true)
+		}, refresh)
+	})
 }
 
 // ============ Small utilities ============ //
 
-/**
- * @template {object} T
- * @template {string} K
- *
- * @param {T} obj
- * @param {K} key
- * @returns {K is keyof T}
- */
-const isKeyInObj = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
-
-/**
- * @param {string} str
- */
-const trimLines = (str) =>
-	str
+export function trimLines(str: string): string {
+	return str
 		.split('\n')
 		.map((line) => line.trim())
 		.join('\n')
+}
 
-/**
- * @param {Record<string, string>} json
- */
-const displayJson = (json) => console.log(JSON.stringify(json, null, 4))
+export function displayJson(json: Record<string, string>): void {
+	console.log(JSON.stringify(json, null, 4))
+}
 
 // ============ Assertions and error management ============ //
 
 /**
  * Ensure a value is an instanceof of a given type
- *
- * @template T
- * @param {unknown} value
- * @param {new() => T} type
- * @param {string | undefined} [message]
- * @returns {T}
  */
-function _assertType(value, type, message) {
+export function _assertType<T>(value: unknown, type: new () => T, message?: string): T {
 	if (value instanceof type) {
 		return value
 	}
@@ -381,39 +345,29 @@ function _assertType(value, type, message) {
 
 /**
  * Ensure a value is an instanceof of a given type or 'null' or 'undefined'
- *
- * @template T
- * @param {unknown} value
- * @param {new() => T} type
- * @param {string} [message]
- * @returns {T | null | undefined}
  */
-const _assertTypeOrNull = (value, type, message) =>
-	value === null || value === undefined ? value : _assertType(value, type, message)
+export function _assertTypeOrNull<T>(value: unknown, type: new () => T, message?: string): T | null | undefined {
+	return value === null || value === undefined ? value : _assertType(value, type, message)
+}
 
 /**
  * Ensure an Element is an HTMLElement
- * @param {Element} element
  */
-const _assertHtmlElement = (element) =>
+export const _assertHtmlElement = (element: Element) =>
 	_assertType(element, HTMLElement, 'Assertion error: provided Element is not an instance of HTMLElement')
 
 /**
  * Ensure an Element | null is an HTMLElement | null
- * @param {Element | null} element
  */
-const _assertHtmlElementOrNull = (element) =>
+export const _assertHtmlElementOrNull = (element: Element | null) =>
 	element === null
 		? null
 		: _assertType(element, HTMLElement, 'Assertion error: provided Element is not an instance of HTMLElement')
 
 /**
  * Assert an element as not null
- * @template T
- * @param {T | null | undefined} value
- * @param {string | undefined} [message]
  */
-function _assertNotNull(value, message) {
+export function _assertNotNull<T>(value: T | null | undefined, message?: string) {
 	if (value === null || value === undefined) {
 		fail(message ?? 'Assertion error: provided value is null or undefined')
 	}
@@ -421,11 +375,37 @@ function _assertNotNull(value, message) {
 	return value
 }
 
-// ====== Child Script Evaluation ====== //
+/**
+ * Run a function anonymously
+ */
+export function runAnonymous(anon: () => void) {
+	return anon()
+}
 
-ambientModule.exports = {
-	/**
-	 * @param {string} script
-	 */
-	childScriptEval: (script) => eval(script),
+/**
+ * Setup a keyboard handler function
+ */
+export function setupKeyHandler(
+	keys: { key: KeyboardEvent['key']; ctrl?: boolean; alt?: boolean; shift?: boolean },
+	callback: () => void,
+) {
+	document.addEventListener('keydown', (e) => {
+		if (
+			e.key === keys.key &&
+			e.ctrlKey === (keys.ctrl ?? false) &&
+			e.altKey === (keys.alt ?? false) &&
+			e.shiftKey === (keys.shift ?? false)
+		) {
+			e.preventDefault()
+			callback()
+			return false
+		}
+	})
+}
+
+/**
+ * Sanitize a string into as afe filename
+ */
+export function sanitizeFileName(fileName: string) {
+	return fileName.replace(/(?<!\s):\s/g, ' - ').replace(/[^a-zA-Z0-9\s\-_,;\.\(\)\[\]\{\}\!'’°#&\$\^@]/g, '_')
 }

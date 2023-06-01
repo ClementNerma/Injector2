@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "ESNext",
+        "lib": ["ESNext", "DOM"]
+    },
+
+    "include": [
+        "src",
+        "scripts"
+    ]
+}
