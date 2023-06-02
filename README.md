@@ -6,47 +6,66 @@ It allows to write scripts that will be run on every or only some websites.
 
 # Features
 
-- Inject custom JS scripts in any website
-- Split your code in multiple modules using `require()`
-- JS with full typing support through JSDoc (and a [`jsconfig.json`](scripts/jsconfig.json) file)
+- Inject custom JS in any website
+- Split your code in multiple modules using standard `import` and even NPM packages!
+- Full support for TypeScript (with strict options enabled)
 - Use any file editor to manage your scripts
 - Create and edit your scripts with 100% typing support in VSCode
-- No need to reload the extension when the scripts are modified
+
+**Note:** due to transitioning to Manifest V3, the extension will need to be rebuild (using a single command) and reloaded into your browser each time you modify the script. This allows though more flexibility on the code side, such as using a TypeScript toolchain, bundling NPM dependencies and minifying the generated scripts.
 
 # Setup
 
 1. Clone this repository
-2. Run in the background the [`server/index.js`](server/index.js) script
-3. Load the cloned repository as an extension in your browser
-4. Enjoy!
+2. Run `pnpm i` (requires to have pnpm installed, if not run `npm i -g pnpm` beforehand)
+3. Modify anything you want inside the [`scripts`](sripts/) folder (the recommanded way is to create a TypeScript file for each domain in `scripts/domains` and list them in `scripts/domains/map.ts`).
+4. Run `pnpm build`
+5. Load the produced `Injector2.zip` file inside your browser (or the whole directory if you're on Chrome)
 
 # Directory structure
 
-All website scripts go into the `scripts/domains` directory. One file per domain, without the subdomain (e.g. `google.com.js`).
+In the `scripts` folder you'll find two files: `inject.ts`, which is injected on each page at load and refresh, and `lib.ts` which contains some useful utilities to write scripts easily.
 
-Each script is recommended to be written as `runModuleAnonymous(module, async () => { /* your code goes here */ })`
+The injection script depends on the `scripts/domains/_map.ts` which is private (it's your own file) and should export by default a `Record<string, string>` with keys being domains and values being `() => Promise<void>` callbacks.
 
-Note that you can `require()` scripts anywhere in the `scripts` directory, like Node.js, and use `module.exports = /* whatever */`# Injector2
+Example:
 
-Injector2 is a browser extension (mainly aimed at Chrome) replacing the previous Injector app.
+```typescript
+// file: scripts/domain/_map.ts
 
-It allows to write scripts that will be run on every or only some websites.
+export default {
+    // note that we don't write 'www.' here, the script will be run on every subdomain no matter what happens
+    // if you want to run your logic on a single subdomain, it's up to you to configure it that way
+    'google.com': async () => {
+        alert('Hello world!')
+    }
+}
+```
 
-# Setup
+This will display an alert box when you visit `google.com`.
 
-1. Clone this repository
-2. Run in the background the [`server/index.js`](server/index.js) script
-3. Load the cloned repository as an extension in your browser
-4. Enjoy!
+Now when you have lots of domains, it's easier to split the logic into modules. You can go like this:
 
-# Directory structure
+```typescript
+// file: scripts/domains/google.com.ts
 
-All website scripts go into the `scripts/domains` directory. One file per domain, without the subdomain (e.g. `google.com.js`).
+export default async () => {
+    alert('Hello world!')
+}
+```
 
-Each script is recommended to be written as `runModuleAnonymous(module, async () => { /* your code goes here */ })`
+```typescript
+// file: scripts/domains/_map.ts
 
-Note that you can `require()` scripts anywhere in the `scripts` directory, like Node.js, and use `module.exports = /* whatever */`.
+import module_google_com from './google.com'
 
-There can also be two special domain files: `_files.js` which will run on `file:///` URLs ; and `_generic.js` which will run on every single website.
+// Helps to ensure we export the correct type...
+import { domainsMap } from '../lib'
 
-Also note that all scripts import the content of [`include/lib.js`](scripts/include/lib.js) as well as [`include/prelude.js`](scripts/include/prelude.js) before they start.
+// ...otherwise it will throw a compile-time error here
+export default domainsMap({
+    'google.com': module_google_com
+})
+```
+
+And voilà! Just run `pnpm build` and you'll get a `.zip` extension to load into your browser (exactly the same as an `.xpi`).

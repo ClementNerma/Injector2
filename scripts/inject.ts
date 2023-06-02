@@ -1,3 +1,6 @@
+// The shape of 'domains' should be a `Record<string, string>`
+// where the keys are domain names (not including subdomains, e.g. `google.com` but not `www.google.com`)
+// and the associated value is an asynchronous callback returning nothing (() => Promise<void>)
 import domains from './domains/_map'
 
 async function runDomainScript(domain: string): Promise<void> {
