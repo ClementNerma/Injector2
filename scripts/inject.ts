@@ -1,4 +1,4 @@
-import { domains } from './domains/_map'
+import domains from './domains/_map'
 
 async function runDomainScript(domain: string): Promise<void> {
 	if (!Object.prototype.hasOwnProperty.call(domains, domain)) {

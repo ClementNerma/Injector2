@@ -409,3 +409,10 @@ export function setupKeyHandler(
 export function sanitizeFileName(fileName: string) {
 	return fileName.replace(/(?<!\s):\s/g, ' - ').replace(/[^a-zA-Z0-9\s\-_,;\.\(\)\[\]\{\}\!'’°#&\$\^@]/g, '_')
 }
+
+/**
+ * Ensure correct shape for domains map
+ */
+export function domainsMap(map: Record<string, () => Promise<void>>): typeof map {
+	return map
+}
