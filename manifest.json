@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/chrome-manifest",
   "manifest_version": 3,
   "name": "Injector 2",
   "author": "Clément Nerma",
@@ -14,17 +15,16 @@
     "48": "icons/48x48.png",
     "128": "icons/128x128.png"
   },
-  "background": {
-    "service_worker": "dist/app.js",
-    "type": "module"
-  },
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "scripting",
-    "storage"
-  ],
-  "host_permissions": [
-    "*://*/*"
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "match_about_blank": true,
+      "run_at": "document_start",
+      "js": [
+        "dist/inject.js"
+      ]
+    }
   ]
 }
