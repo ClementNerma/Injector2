@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "Injector 2",
   "author": "Clément Nerma",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Inject JavaScript files on any website",
   "browser_specific_settings": {
     "gecko": {
