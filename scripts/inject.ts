@@ -20,5 +20,8 @@ if (!(alreadyRun in window)) {
 	assignableWindow[alreadyRun] = true
 
 	runDomainScript('_generic')
-	runDomainScript(location.hostname.split('.').slice(-2).join('.'))
+
+	const domain = location.protocol === 'file:' ? '_files' : location.hostname.split('.').slice(-2).join('.')
+
+	runDomainScript(domain)
 }
