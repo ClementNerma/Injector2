@@ -1,3 +1,10 @@
+// Disable injector if query indicates so
+if (query().has('noinjector')) {
+	const msg = 'Injector scripts (domain + generic) disabled for this page'
+	console.debug(msg)
+	throw new Error(msg)
+}
+
 /**
  * Fail with an error message
  */
