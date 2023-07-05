@@ -24,7 +24,11 @@ if (!(alreadyRun in window)) {
 
 	if (location.protocol === 'file:') {
 		runDomainScript('_files')
-	} else if (!runDomainScript(location.hostname.split('.').slice(-2).join('.'))) {
-		runDomainScript(location.hostname)
+	} else {
+		runDomainScript(location.hostname.split('.').slice(-2).join('.')).then(scriptExists => {
+			if (!scriptExists) {
+				runDomainScript(location.hostname)
+			}
+		})
 	}
 }
