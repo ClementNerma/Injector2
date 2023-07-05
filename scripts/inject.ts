@@ -3,14 +3,15 @@
 // and the associated value is an asynchronous callback returning nothing (() => Promise<void>)
 import domains from './domains/_map'
 
-async function runDomainScript(domain: string): Promise<void> {
+async function runDomainScript(domain: string): Promise<boolean> {
 	if (!Object.prototype.hasOwnProperty.call(domains, domain)) {
 		console.debug(`Missing domain script: ${domain}`)
-		return
+		return false
 	}
 
 	console.debug(`Running domain script: ${domain}`)
 	await domains[domain]()
+	return true
 }
 
 const alreadyRun = '__ALREADY_RUN_VAR'
@@ -21,7 +22,9 @@ if (!(alreadyRun in window)) {
 
 	runDomainScript('_generic')
 
-	const domain = location.protocol === 'file:' ? '_files' : location.hostname.split('.').slice(-2).join('.')
-
-	runDomainScript(domain)
+	if (location.protocol === 'file:') {
+		runDomainScript('_files')
+	} else if (!runDomainScript(location.hostname.split('.').slice(-2).join('.'))) {
+		runDomainScript(location.hostname)
+	}
 }
