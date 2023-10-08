@@ -1,8 +1,8 @@
 {
 	"private": true,
 	"scripts": {
-		"build:domains": "pnpm esbuild scripts/inject.ts --bundle --outfile=dist/inject.js --sourcemap=inline --target=esnext --format=iife --minify",
-		"build": "pnpm build:domains && rm -f Injector2.zip && zip -r Injector2.zip manifest.json icons/ dist/",
+		"build:domains": "esbuild scripts/inject.ts --bundle --outfile=dist/inject.js --sourcemap=inline --target=esnext --format=iife --minify",
+		"build": "bun build:domains && rm -f Injector2.zip && zip -r Injector2.zip manifest.json icons/ dist/",
 		"watch": "nodemon --watch scripts/ -e ts --exec 'pnpm build'"
 	},
 	"devDependencies": {
