@@ -109,7 +109,9 @@ export function remove(selector: string): void {
  * Remove all elements matching a selector
  */
 export function removeAll(selector: string): void {
-	qa(selector).forEach((el) => el.remove())
+	for (const el of qa(selector)) {
+		el.remove()
+	}
 }
 
 /**
