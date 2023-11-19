@@ -44,10 +44,13 @@ export function styleOf(selector: string): CSSStyleDeclaration | null {
 /**
  * Inject a new stylesheet in the page
  */
-export function css(css: string): void {
+export function css(css: string): HTMLStyleElement {
 	const stylesheet = document.createElement('style')
 	stylesheet.innerHTML = css
+
 	waitFor('head', (head) => head.appendChild(stylesheet))
+
+	return stylesheet
 }
 
 /**
