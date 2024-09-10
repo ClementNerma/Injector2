@@ -26,12 +26,14 @@ export const isPageReady = () => document.readyState === 'complete'
 /**
  * Select an element using a CSS selector
  */
-export const q = (selector: string) => _assertHtmlElementOrNull(document.querySelector(selector))
+export const q = (selector: string, inEl?: HTMLElement) =>
+	_assertHtmlElementOrNull((inEl ?? document).querySelector(selector))
 
 /**
  * Select all elements that match a CSS selector
  */
-export const qa = (selector: string) => Array.from(document.querySelectorAll(selector)).map(_assertHtmlElement)
+export const qa = (selector: string, inEl?: HTMLElement) =>
+	Array.from((inEl ?? document).querySelectorAll(selector)).map(_assertHtmlElement)
 
 /**
  * Get the style of an element matching a CSS selector
