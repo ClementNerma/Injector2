@@ -48,7 +48,7 @@ export function css(css: string): HTMLStyleElement {
 	const stylesheet = document.createElement('style')
 	stylesheet.innerHTML = css
 
-	waitFor('head', (head) => head.appendChild(stylesheet))
+	waitFor('head').then((head) => head.appendChild(stylesheet))
 
 	return stylesheet
 }
@@ -57,17 +57,11 @@ export function css(css: string): HTMLStyleElement {
  * Wait for an element to appear
  * @returns
  */
-export async function waitFor(
-	selector: string,
-	callback: (el: HTMLElement, time: number) => void,
-	delayAfterDomReady = 4000,
-	refresh = 10,
-): Promise<boolean> {
+export async function waitFor(selector: string, delayAfterDomReady = 4000, refresh = 10): Promise<HTMLElement> {
 	const init = q(selector)
 
 	if (init) {
-		callback(init, 0)
-		return true
+		return Promise.resolve(init)
 	}
 
 	await domReady()
@@ -81,15 +75,16 @@ export async function waitFor(
 			if (!target) {
 				if (isPageReady() && Date.now() - started >= delayAfterDomReady) {
 					clearInterval(waiter)
-					resolve(false)
+					// reject(
+					// 	new Error(`No element found with selector "${selector}" after waiting delay of ${delayAfterDomReady} ms.`),
+					// )
 				}
 
 				return
 			}
 
 			clearInterval(waiter)
-			callback(target, Date.now() - started)
-			resolve(true)
+			resolve(target)
 		}, refresh)
 	})
 }
@@ -120,39 +115,36 @@ export function removeAll(selector: string): void {
 /**
  * Click an element once it appears
  */
-export function clickReady(selector: string, callback?: () => void): void {
-	waitFor(selector, (el) => {
+export function clickReady(selector: string): Promise<void> {
+	return waitFor(selector).then((el) => {
 		el.click()
-		callback?.()
 	})
 }
 
 /**
  * Remove an element when it appears
  */
-export function removeReady(selector: string, callback?: () => void): void {
-	waitFor(selector, (el) => {
+export function removeReady(selector: string): Promise<void> {
+	return waitFor(selector).then((el) => {
 		el.remove()
-		callback?.()
 	})
 }
 
 /**
  * Hide an element and remove it when it appears
  */
-export function hideAndRemove(selector: string, callback?: () => void): void {
+export function hideAndRemove(selector: string): Promise<void> {
 	hide(selector)
-	removeReady(selector, callback)
+	return removeReady(selector)
 }
 
 /**
  * Hide and remove all elements matching a selector when they are appear (the first time only)
  */
-export function hideAndRemoveAll(selector: string, callback?: () => void): void {
+export function hideAndRemoveAll(selector: string): Promise<void> {
 	hide(selector)
-	waitFor(selector, (_) => {
+	return waitFor(selector).then(() => {
 		removeAll(selector)
-		callback?.()
 	})
 }
 
@@ -210,8 +202,6 @@ export function createEl(
 		for (const child of contentOrChildren) {
 			el.appendChild(child)
 		}
-	} else if (contentOrChildren !== undefined && contentOrChildren !== null) {
-		fail('Unsupported content type provided to "createEl" function')
 	}
 
 	if (eventListeners) {
@@ -230,13 +220,19 @@ export function download(text: string, filename = 'file.txt', mimeType = 'text/p
 	const blob = new Blob([text], { type: mimeType })
 	const url = window.URL.createObjectURL(blob)
 
-	const link = document.createElement('a')
-	link.setAttribute('href', url)
-	link.setAttribute('download', filename)
-
+	const link = createEl('a', { href: url, download: filename })
 	link.click()
 
 	window.URL.revokeObjectURL(url)
+	link.remove()
+}
+
+/**
+ * Download a file from an URL
+ */
+export function downloadUri(uri: string, filename?: string): void {
+	const link = createEl('a', { href: uri, download: filename ?? '' })
+	link.click()
 	link.remove()
 }
 
@@ -427,4 +423,22 @@ export function sanitizeFileName(fileName: string) {
  */
 export function domainsMap(map: Record<string, () => Promise<void>>): typeof map {
 	return map
+}
+
+/**
+ * Get filename from Content-Disposition header on URL
+ */
+export async function fetchContentDispositionFilename(url: string): Promise<string | null> {
+	const forHeaderRes = await fetch(url, { method: 'HEAD' })
+
+	if (!forHeaderRes.ok) {
+		fail(`Failed to fetch headers on URL "${url}" (status: ${forHeaderRes.status})`)
+	}
+
+	const fileDispositionHeader = forHeaderRes.headers.get('content-disposition')
+
+	return fileDispositionHeader
+		? fileDispositionHeader.match(/^attachment; filename="(.*)"$/)?.[1] ??
+				fail('Filename not found in book file Content-Disposition header')
+		: null
 }
