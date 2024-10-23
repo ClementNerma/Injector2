@@ -117,19 +117,17 @@ export function removeAll(selector: string): void {
 /**
  * Click an element once it appears
  */
-export function clickReady(selector: string): Promise<void> {
-	return waitFor(selector).then((el) => {
-		el.click()
-	})
+export async function clickWhenReady(selector: string): Promise<void> {
+	const el = await waitFor(selector)
+	el.click()
 }
 
 /**
  * Remove an element when it appears
  */
-export function removeReady(selector: string): Promise<void> {
-	return waitFor(selector).then((el) => {
-		el.remove()
-	})
+export async function removeWhenReady(selector: string): Promise<void> {
+	const el = await waitFor(selector)
+	el.remove()
 }
 
 /**
@@ -137,17 +135,17 @@ export function removeReady(selector: string): Promise<void> {
  */
 export function hideAndRemove(selector: string): Promise<void> {
 	hide(selector)
-	return removeReady(selector)
+	return removeWhenReady(selector)
 }
 
 /**
  * Hide and remove all elements matching a selector when they are appear (the first time only)
  */
-export function hideAndRemoveAll(selector: string): Promise<void> {
+export async function hideAndRemoveAll(selector: string): Promise<void> {
 	hide(selector)
-	return waitFor(selector).then(() => {
-		removeAll(selector)
-	})
+
+	await waitFor(selector)
+	removeAll(selector)
 }
 
 /**
