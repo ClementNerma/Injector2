@@ -397,13 +397,14 @@ export function setupKeyHandler(
 	keys: { key: KeyboardEvent['key']; ctrl?: boolean; alt?: boolean; shift?: boolean },
 	callback: () => void,
 ) {
+	const { ctrl = false, alt = false, shift = false, key } = keys
+
+	console.debug(
+		`[Injector2] Set up keyboard shortcut: ${ctrl ? 'Ctrl + ' : ''}${alt ? 'Alt + ' : ''}${shift ? 'Shift + ' : ''}${keys.key}`,
+	)
+
 	document.addEventListener('keydown', (e) => {
-		if (
-			e.key === keys.key &&
-			e.ctrlKey === (keys.ctrl ?? false) &&
-			e.altKey === (keys.alt ?? false) &&
-			e.shiftKey === (keys.shift ?? false)
-		) {
+		if (e.key === key && e.ctrlKey === ctrl && e.altKey === alt && e.shiftKey === shift) {
 			e.preventDefault()
 			callback()
 			return false
@@ -438,7 +439,7 @@ export async function fetchContentDispositionFilename(url: string): Promise<stri
 	const fileDispositionHeader = forHeaderRes.headers.get('content-disposition')
 
 	return fileDispositionHeader
-		? fileDispositionHeader.match(/^attachment; filename="(.*)"$/)?.[1] ??
-				fail('Filename not found in book file Content-Disposition header')
+		? (fileDispositionHeader.match(/^attachment; filename="(.*)"$/)?.[1] ??
+				fail('Filename not found in book file Content-Disposition header'))
 		: null
 }
